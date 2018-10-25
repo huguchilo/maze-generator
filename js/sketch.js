@@ -1,142 +1,76 @@
-﻿var ship;
-var flowers = [];
-var num_flowers = 9;
-var drops = [];
+﻿var cols, rows;
+var grid = [];
+var w = 40;
 
-var hits = 1;
-var win = false;
-var lost = false;
-var restart = false;
-var alien = new Image();
-
-function preload() {
-    alien = loadImage("alien2.jpg");
-}
+var current;
 
 function setup() {
-    createCanvas(600, 400);
-    ship = new Ship();
-    alien.src = 'images/alien1.png';
+    createCanvas(400, 400);
 
-    for (var i = 0; i < num_flowers; i++) {
-        flowers[i] = new Flow(i * 65 + 80, 60, hits);
-        flowers[i].preload(alien);
+    cols = floor(width / w);
+    rows = floor(height / w);
+
+    for (var j = 0; j < rows; j++) {
+        for (var i = 0; i < cols; i++) {
+            var cell = new Cell(i, j);
+            grid.push(cell);
+        }
     }
+
+    current = grid[0];
+
+
 }
 
 function draw() {
-    if (!win && !lost) {
-        background(0);
+    background(51);
 
-        for (var i = 0; i < drops.length; i++) {
-            drops[i].show();
-            drops[i].move();
-            for (var j = 0; j < flowers.length; j++) {
-                if (drops[i].hits(flowers[j])) {
-                    flowers[j].grow();
-                    drops[i].evaporate();
-                }
-            }
-        }
-
-        var edge = false;
-        for (var i = 0; i < flowers.length; i++) {
-            flowers[i].show();
-            flowers[i].move();
-            if (flowers[i].x > width || flowers[i].x < 0) {
-                edge = true;
-            }
-        }
-        if (edge) {
-            for (var i = 0; i < flowers.length; i++) {
-                flowers[i].shiftDown();
-            }
-        }
-
-        for (var i = drops.length - 1; i >= 0; i--) {
-            if (drops[i].toDelete) {
-                drops.splice(i, 1);
-            }
-        }
-
-        for (var i = flowers.length - 1; i >= 0; i--) {
-            if (flowers[i].toDelete) {
-                flowers.splice(i, 1);
-            }
-        }
-
-
-        if (flowers.length - 1 < 0) {
-            win = true;
-        }
-        for (var i = 0; i < flowers.length; i++) {
-            if (flowers[i].y > height - flowers[i].r) {
-                lost = true;
-            }
-        }
-
-        if (win) {
-            textSize(100);
-            textAlign(CENTER);
-            stroke(10);
-            fill(255);
-            text("Win!", width / 2, height / 2);
-            noStroke();
-        }
-        if (lost) {
-            textSize(100);
-            textAlign(CENTER);
-            stroke(10);
-            fill(255);
-            text("Lost!", width / 2, height / 2);
-            noStroke();
-        }
-
-        ship.show();
-        ship.move();
-
+    for (var i = 0; i < grid.length; i++) {
+        grid[i].show();
     }
-    if (restart) {
-        for (var i = flowers.length - 1; i >= 0; i--) {
-            flowers[i].toDelete = true;
-            if (flowers[i].toDelete) {
-                flowers.splice(i, 1);
-            }
-        }
-        for (var i = 0; i < num_flowers; i++) {
-            flowers[i] = new Flow(i * 65 + 80, 60, hits);
-        }
-        win = false;
-        lost = false;
-        restart = false;
 
+    current.visited = true;
+    current.checkNeighbors();
 
-    }
 }
 
+function Cell(i, j) {
+    this.i = i;
+    this.j = j;
+    this.walls = [true, true, true, true];
+    this.visited = false;
 
-function keyReleased() {
-    ship.setDir(0);
-}
+    this.checkNeighbors = function () {
 
 
-function keyPressed() {
-
-    if (keyCode === RIGHT_ARROW) {
-        ship.setDir(1);
-    } else if (keyCode === LEFT_ARROW) {
-        ship.setDir(-1);
-    }
-    if (key === ' ') {
-        var drop = new Drop(ship.x + 8, height - 10);
-        drops.push(drop);
     }
 
-    if (key === 'r') {
-        win = false;
-        lost = false;
-        restart = true;
-    }
+    this.show = function () {
+        var x = this.i * w;
+        var y = this.j * w;
+        debugger;
+        stroke(255);
+        if (this.walls[0]){
+            line(x    , y    , x + w, y    );
+        }
+        if (this.walls[1]) {
+            line(x + w, y    , x + w, y + w);
+        }
+        if (this.walls[2]) {
+            line(x + w, y + w, x    , y + w);
+        }
+        if (this.walls[3]) {
+            line(x    , y + w, x    , y    );
+        }
+        
+        if (this.visited) {
+            fill(200, 30, 40,100);
+            rect(x, y, w, w);
 
+        }        
+
+
+        //rect(x, y, w, w);
+    }
 
 }
